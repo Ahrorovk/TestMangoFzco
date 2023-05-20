@@ -8,7 +8,5 @@ sealed class AuthCodeCheckEvent {
     data class OnAccessTokenChange(val token:String):AuthCodeCheckEvent()
     data class OnAccessTokenLifeChange(val lifeData:Long):AuthCodeCheckEvent()
     data class OnRefreshTokenChange(val token:String):AuthCodeCheckEvent()
-    object GoToProfile:AuthCodeCheckEvent()
-    object GoToRegistration:AuthCodeCheckEvent()
     object CheckAuthCode:AuthCodeCheckEvent()
 }

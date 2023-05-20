@@ -1,8 +1,7 @@
 package com.ahrorovk.testmangofzco.presentation.ProfileScreen
 
+import android.graphics.Bitmap
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ahrorovk.testmangofzco.core.Resource
@@ -21,12 +20,12 @@ import com.ahrorovk.testmangofzco.domain.model.requestResponse.UserInfoResponse
 import com.ahrorovk.testmangofzco.domain.use_cases.GetCurrentUserUseCase
 import com.ahrorovk.testmangofzco.domain.use_cases.RefreshTokenUseCase
 import com.ahrorovk.testmangofzco.domain.use_cases.UpdateUserInfoUseCase
-import com.ahrorovk.testmangofzco.presentation.RegistrationScreen.RegistrationEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -55,7 +54,6 @@ class ProfileViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
 
-
         dataStoreManager.getRefreshToken.onEach { value ->
             _state.update {
                 it.copy(refreshToken = value)
@@ -68,34 +66,53 @@ class ProfileViewModel @Inject constructor(
             }
             Log.e("NAME", value)
         }.launchIn(viewModelScope)
+
         dataStoreManager.getUsername.onEach { value ->
             _state.update {
                 it.copy(username = value)
             }
         }.launchIn(viewModelScope)
+
         dataStoreManager.getCity.onEach { value ->
             _state.update {
                 it.copy(city = value)
             }
         }.launchIn(viewModelScope)
+
         dataStoreManager.getBirthday.onEach { value ->
             _state.update {
                 it.copy(birthday = value)
             }
         }.launchIn(viewModelScope)
+
         dataStoreManager.getInstagram.onEach { value ->
             _state.update {
                 it.copy(instagram = value)
             }
         }.launchIn(viewModelScope)
+
         dataStoreManager.getStatus.onEach { value ->
             _state.update {
                 it.copy(status = value)
             }
         }.launchIn(viewModelScope)
+
         dataStoreManager.getVK.onEach { value ->
             _state.update {
                 it.copy(vk = value)
+            }
+        }.launchIn(viewModelScope)
+
+        dataStoreManager.getAvatar.onEach { value ->
+            _state.update {
+                it.copy(avatar = value)
+            }
+            Log.e("AvatarBase64","$value")
+        }.launchIn(viewModelScope)
+
+        dataStoreManager.getAvatarBase64.onEach { value ->
+            _state.update {
+                it.copy(avatarBase64 = value)
             }
         }.launchIn(viewModelScope)
         dataStoreManager.getRegisterPhone.onEach { value ->
@@ -137,6 +154,7 @@ class ProfileViewModel @Inject constructor(
                 _state.update {
                     it.copy(updateUserInfoState = event.state)
                 }
+
             }
             is ProfileEvent.OnCurrentUserStateChange -> {
                 _state.update {
@@ -158,6 +176,9 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.ChangeItem -> {
                 updateUserInfo()
             }
+            is ProfileEvent.OnUploadAvatar->{
+                uploadAvatar(_state.value.avatarBitmap)
+            }
             is ProfileEvent.OnRefreshStateChange -> {
                 _state.update {
                     it.copy(refreshState = event.state)
@@ -168,13 +189,25 @@ class ProfileViewModel @Inject constructor(
                     it.copy(refreshTokenState = event.state)
                 }
             }
+            is ProfileEvent.OnAvatarBase64Change->{
+                viewModelScope.launch(Dispatchers.IO) {
+                    dataStoreManager.updateAvatarBase64(event.avatarBase64)
+                }
+            }
             is ProfileEvent.RefreshToken -> {
                 refreshToken()
             }
             else -> {}
         }
     }
-
+    private fun uploadAvatar(avatarBitmap: Bitmap?) {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        avatarBitmap?.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        val base64String = android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT)
+        onEvent(ProfileEvent.OnItemChange(base64String))
+        onEvent(ProfileEvent.ChangeItem)
+    }
     private fun getCurrentUser() {
         getCurrentUserUseCase.invoke(_state.value.accessToken)
             .onEach { result: Resource<UserInfoResponse> ->
@@ -184,18 +217,21 @@ class ProfileViewModel @Inject constructor(
                         onEvent(ProfileEvent.OnCurrentUserStateChange(CurrentUserState(response = response)))
                         response?.let {
                             it.profile_data?.let { itm ->
-                                onEvent(
-                                    ProfileEvent.OnInfoStatesChange(
-                                        itm.avatar,
-                                        itm.birthday,
-                                        itm.city,
-                                        itm.instagram,
-                                        itm.name,
-                                        itm.status,
-                                        itm.username,
-                                        itm.vk,
+                                itm.avatars?.let { avatars ->
+                                    onEvent(
+                                        ProfileEvent.OnInfoStatesChange(
+                                            itm.avatar,
+                                            itm.birthday,
+                                            itm.city,
+                                            itm.instagram,
+                                            itm.name,
+                                            itm.status,
+                                            itm.username,
+                                            itm.vk,
+                                            avatars
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                         Log.e("TAG", "GetCurrentUserResponse->\n ${_state.value.currentUserState}")
@@ -221,8 +257,8 @@ class ProfileViewModel @Inject constructor(
         updateUserInfoUseCase.invoke(
             _state.value.accessToken, UpdateUserInfoBody(
                 avatar = Avatar(
-                    "",
-                    if (_state.value.typeOfItem == "avatar") _state.value.itemState else _state.value.avatar
+                    if (_state.value.typeOfItem == "avatar") _state.value.itemState else state.value.avatarBase64,
+                    "avatar.png"
                 ),
                 birthday = checkUpdatesInfo(
                     _state.value.typeOfItem,
@@ -268,6 +304,8 @@ class ProfileViewModel @Inject constructor(
                     is Resource.Success -> {
                         val response: UpdateUserInfoResponse? = result.data
                         onEvent(ProfileEvent.OnUpdateUserInfoChange(UpdateUserInfoState(response = response)))
+                        if(_state.value.typeOfItem == "avatar")
+                            onEvent(ProfileEvent.OnAvatarBase64Change(_state.value.itemState))
                         Log.e("TAG", "GetCurrentUserResponse->\n ${_state.value.currentUserState}")
                     }
                     is Resource.Error -> {

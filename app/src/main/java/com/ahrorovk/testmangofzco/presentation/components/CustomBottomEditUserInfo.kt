@@ -14,19 +14,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
-import com.ahrorovk.testmangofzco.presentation.ProfileScreen.ProfileEvent
-import kotlinx.coroutines.launch
-import java.sql.Date
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CustomBottomEditUserInfo(
     value:String,
@@ -75,6 +68,7 @@ fun CustomBottomEditUserInfo(
                 else
                 {
                     CustomTextField(
+                        modifier = Modifier.fillMaxWidth(0.8f),
                         value = value,
                         onValueChange = {
                             onValueChange(it)

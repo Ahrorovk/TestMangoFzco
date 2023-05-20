@@ -39,7 +39,7 @@ fun PhoneNumberItem(
             selectedImage = selectedImage
         )
         Spacer(modifier = Modifier.width(5.dp))
-        CustomTextField(
+        CustomNumberField(
             modifier = Modifier
                 .weight(3f)
                 .height(with(LocalDensity.current) { textFieldSize.height.toDp() })
@@ -51,8 +51,7 @@ fun PhoneNumberItem(
                 if (newString.length < 14) {
                     onValueChange(newString)
                 }
-            },
-            isNumberOption = true
+            }
         )
     }
 }

@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.map
 class DataStoreManager(private val context: Context) {
     companion object {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("preferences_name")
-        val AVATAR_KEY =stringPreferencesKey("avatar_key")
+        val AVATAR_FILENAME_KEY =stringPreferencesKey("avatar_filename_key")
+        val AVATAR_BASE64_KEY =stringPreferencesKey("avatar_base64_key")
         val BIRTHDAY_KEY=stringPreferencesKey("birthday_key")
         val CITY_KEY= stringPreferencesKey("city_key")
         val INSTAGRAM_KEY=stringPreferencesKey("instagram_key")
@@ -30,9 +31,14 @@ class DataStoreManager(private val context: Context) {
         }
     }
 
-    suspend fun updateAvatar(avatar: String) {
+    suspend fun updateAvatarFilename(avatar: String) {
         context.dataStore.edit { preferences ->
-            preferences[AVATAR_KEY] = avatar
+            preferences[AVATAR_FILENAME_KEY] = avatar
+        }
+    }
+    suspend fun updateAvatarBase64(base64: String) {
+        context.dataStore.edit { preferences ->
+            preferences[AVATAR_BASE64_KEY] = base64
         }
     }
     suspend fun updateBirthday(birthday: String) {
@@ -113,7 +119,10 @@ class DataStoreManager(private val context: Context) {
         it[NAME_KEY] ?: ""
     }
     val getAvatar = context.dataStore.data.map {
-        it[AVATAR_KEY] ?: ""
+        it[AVATAR_FILENAME_KEY] ?: ""
+    }
+    val getAvatarBase64 = context.dataStore.data.map {
+        it[AVATAR_BASE64_KEY] ?: ""
     }
     val getBirthday = context.dataStore.data.map {
         it[BIRTHDAY_KEY] ?: ""

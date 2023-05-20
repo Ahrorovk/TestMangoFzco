@@ -2,7 +2,6 @@ package com.ahrorovk.testmangofzco.presentation.AuthorizationScreen
 
 import com.ahrorovk.testmangofzco.R
 import com.ahrorovk.testmangofzco.core.states.SendAuthCodeState
-import com.ahrorovk.testmangofzco.core.states.UserRegistrationState
 
 data class AuthorizationState (
     val token:String ="",

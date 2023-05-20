@@ -17,6 +17,5 @@ sealed class RegistrationEvent {
     data class OnRefreshTokenResponseChange(val token:RefreshTokenState):RegistrationEvent()
     object SendUserRegistration:RegistrationEvent()
     object RefreshToken:RegistrationEvent()
-    object GoToProfile:RegistrationEvent()
     object GoToAuthorization:RegistrationEvent()
 }

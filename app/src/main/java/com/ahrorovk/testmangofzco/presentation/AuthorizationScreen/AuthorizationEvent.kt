@@ -8,6 +8,5 @@ sealed class AuthorizationEvent {
     data class OnPhoneChange(val phone: String) : AuthorizationEvent()
     data class OnSendAuthCodeChange(val authCodeState: SendAuthCodeState): AuthorizationEvent()
     object SendAuthCode: AuthorizationEvent()
-    object GoToSecondStepOfAuth: AuthorizationEvent()
     object GoToRegistration: AuthorizationEvent()
 }

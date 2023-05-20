@@ -29,23 +29,6 @@ fun RegistrationScreen(
     state:RegistrationState,
     onEvent: (RegistrationEvent)->Unit
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(key1 = state.userRegState.response!=null){
-        state.userRegState.response?.let {
-            if(it.user_id>0)
-            {
-                onEvent(RegistrationEvent.GoToProfile)
-                Log.e("Response","$it")
-            }
-        }
-    }
-    scope.launch {
-        if(state.error.isNotEmpty()){
-            Toast.makeText(context, state.error,Toast.LENGTH_LONG).show()
-            onEvent(RegistrationEvent.OnErrorChange(""))
-        }
-    }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -75,23 +58,21 @@ fun RegistrationScreen(
                 onEvent(RegistrationEvent.OnUserNameChange(it))
             }, hint = "Username")
             CustomButton(
-                    onClick = {
-                        if(!checkPhone(state.phone)) {
-                            onEvent(RegistrationEvent.OnErrorChange("Phone can only consist of numbers"))
-                        }
-                        if(!checkUserName(state.userName))
-                        {
-                            onEvent(RegistrationEvent.OnErrorChange("You can't use symbols besides '-' or '_'"))
-                        }
-                        if(checkPhone(state.phone) && checkUserName(state.userName)) {
-                            onEvent(RegistrationEvent.SendUserRegistration)
-                        }
-                    },
-                    enabled = state.userName.length >= 5 && state.name.isNotEmpty() && state.phone.length >= 9,
-                    isLoading = state.userRegState.isLoading
-                )
+                onClick = {
+                    if (!checkPhone(state.phone)) {
+                        onEvent(RegistrationEvent.OnErrorChange("Phone can only consist of numbers"))
+                    }
+                    if (!checkUserName(state.userName)) {
+                        onEvent(RegistrationEvent.OnErrorChange("You can't use symbols besides '-' or '_'"))
+                    }
+                    if (checkPhone(state.phone) && checkUserName(state.userName)) {
+                        onEvent(RegistrationEvent.SendUserRegistration)
+                    }
+                },
+                enabled = state.userName.length >= 5 && state.name.isNotEmpty() && state.phone.length >= 9,
+                isLoading = state.userRegState.isLoading
+            )
         }
-
     }
     Box(
         modifier = Modifier

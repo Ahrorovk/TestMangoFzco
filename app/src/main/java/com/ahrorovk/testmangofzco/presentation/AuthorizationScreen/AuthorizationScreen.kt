@@ -1,21 +1,14 @@
 package com.ahrorovk.testmangofzco.presentation.AuthorizationScreen
 
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ahrorovk.testmangofzco.presentation.ProfileScreen.ProfileEvent
-import com.ahrorovk.testmangofzco.presentation.RegistrationScreen.RegistrationEvent
 import com.ahrorovk.testmangofzco.presentation.components.CustomButton
 import com.ahrorovk.testmangofzco.presentation.components.PhoneNumberItem
 
@@ -24,21 +17,6 @@ fun AuthorizationScreen(
     state: AuthorizationState,
     onEvent: (AuthorizationEvent)->Unit
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(key1 = state.authCodeSendState.response!=null){
-        state.authCodeSendState.response?.let {
-            Log.e("Response","$it")
-            if(it.is_success)
-            {
-                onEvent(AuthorizationEvent.GoToSecondStepOfAuth)
-            }
-            else {
-                onEvent(AuthorizationEvent.GoToRegistration)
-                Toast.makeText(context,"You haven't account.Please register",Toast.LENGTH_LONG).show()
-            }
-        }
-    }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -63,9 +41,8 @@ fun AuthorizationScreen(
             )
             CustomButton(onClick = {
                 onEvent(AuthorizationEvent.SendAuthCode)
-            }, enabled = state.phone.length>=9, isLoading = state.authCodeSendState.isLoading)
+            }, enabled = state.phone.length >= 9, isLoading = state.authCodeSendState.isLoading)
         }
-
     }
     Box(
         modifier = Modifier
